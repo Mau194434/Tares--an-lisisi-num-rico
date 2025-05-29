@@ -1,0 +1,170 @@
+---
+title: "Análisis de Regresiones Lineales"
+author: "Mauricio Ortega"
+format: html
+editor: visual
+---
+
+# Librerías
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import statsmodels.api as sm
+```
+
+# Carga de Datos
+
+```{python}
+import pandas as pd
+
+datos_inegi = pd.read_excel("C:\Users\Maria Sanchez\Downloads\Tareas\inegi_subdata.xlsx)
+print("Columnas en el dataset:", datos_inegi.columns.values)
+```
+
+# Matriz de Correlación
+
+```{python}
+solo_numericos = datos_inegi.select_dtypes(include=np.number)
+matriz_corr = solo_numericos.corr()
+print("Matriz de correlación:")
+display(matriz_corr)
+
+plt.figure(figsize=(7, 4))
+sns.heatmap(matriz_corr, annot=True, cmap="YlGnBu", annot_kws={"size":7})
+plt.title("Heatmap de Correlación")
+plt.xticks(rotation=30, ha="right", fontsize=7)
+plt.yticks(fontsize=7)
+plt.tight_layout()
+plt.show()
+```
+
+# Regresión: Exportaciones Totales \~ Importaciones Totales
+
+```{python}
+X = datos_inegi["Importaciones_Totales"]
+y = datos_inegi["Exportaciones_Totales"]
+X_model = sm.add_constant(X)
+modelo_exp_imp = sm.OLS(y, X_model).fit()
+print(modelo_exp_imp.summary())
+```
+
+*Comentario:*\
+Las importaciones totales explican en gran medida el comportamiento de las exportaciones. El coeficiente sugiere que existe una relación lineal positiva significativa.
+
+# Regresión: Actividades Terciarias \~ IGAE
+
+```{python}
+X2 = datos_inegi["IGAE"]
+y2 = datos_inegi["Actividades_Terciarias"]
+X2_model = sm.add_constant(X2)
+modelo_terc_igae = sm.OLS(y2, X2_model).fit()
+print(modelo_terc_igae.summary())
+```
+
+```{python}
+plt.figure()
+sns.regplot(x="IGAE", y="Actividades_Terciarias", data=datos_inegi, color="navy", line_kws={"color":"red"})
+plt.title("Actividades Terciarias vs IGAE")
+plt.xlabel("IGAE")
+plt.ylabel("Act. Terciarias")
+plt.tight_layout()
+plt.show()
+```
+
+*Comentario:*\
+El resultado muestra un fuerte vínculo entre el IGAE y las actividades terciarias, con una tendencia positiva.
+
+# Regresión: Índice de Precios al Consumidor \~ Actividades Primarias
+
+```{python}
+X3 = datos_inegi["Actividades_Primarias"]
+y3 = datos_inegi["Indice de Precios_Consumidor"]
+X3_model = sm.add_constant(X3)
+modelo_precio_prim = sm.OLS(y3, X3_model).fit()
+print(modelo_precio_prim.summary())
+```
+
+```{python}
+plt.figure()
+sns.scatterplot(x="Actividades_Primarias", y="Indice de Precios_Consumidor", data=datos_inegi, color="purple")
+plt.title("Índice de Precios vs Actividades Primarias")
+plt.xlabel("Actividades Primarias")
+plt.ylabel("IPC")
+plt.tight_layout()
+plt.show()
+```
+
+*Comentario:*\
+El análisis evidencia una asociación positiva: a mayor actividad primaria, tiende a incrementarse el índice de precios al consumidor.
+
+# Regresión Múltiple: IGAE \~ Actividades Terciarias + Actividad Industrial
+
+```{python}
+X_multi = datos_inegi[["Actividades_Terciarias", "Actividad_Industrial"]]
+y_multi = datos_inegi["IGAE"]
+X_multi_const = sm.add_constant(X_multi)
+modelo_multiple = sm.OLS(y_multi, X_multi_const).fit()
+print(modelo_multiple.summary())
+```
+
+# Datos y Análisis de Acciones
+
+```{python}
+acciones = pd.read_excel("C:/Users/maxim/OneDrive/Documentos/Análisis Númerico/Maximo_Quiroz_Tarea_3_Acciones.xlsx")
+corr_acc = acciones.corr()
+print("Correlación entre acciones:")
+display(corr_acc)
+
+plt.figure(figsize=(7,4))
+sns.heatmap(corr_acc, annot=True, cmap="PuOr")
+plt.title("Correlación de Acciones")
+plt.tight_layout()
+plt.show()
+```
+
+# Regresión: Apple vs Amazon
+
+```{python}
+X_aapl = acciones["Amazon.Close"]
+y_aapl = acciones["Apple.Close"]
+X_aapl_const = sm.add_constant(X_aapl)
+modelo_aapl_amzn = sm.OLS(y_aapl, X_aapl_const).fit()
+print(modelo_aapl_amzn.summary())
+```
+
+```{python}
+plt.figure()
+sns.regplot(x="Amazon.Close", y="Apple.Close", data=acciones, color="teal", line_kws={"color":"orange"})
+plt.title("Apple vs Amazon (Cierre)")
+plt.xlabel("Amazon (Cierre)")
+plt.ylabel("Apple (Cierre)")
+plt.tight_layout()
+plt.show()
+```
+
+*Comentario:*\
+Se observa una correlación positiva entre los precios de cierre de Amazon y Apple.
+
+# Regresión: Google vs Microsoft
+
+```{python}
+X_goog = acciones["Microsoft.Close"]
+y_goog = acciones["Google.Close"]
+X_goog_const = sm.add_constant(X_goog)
+modelo_goog_msft = sm.OLS(y_goog, X_goog_const).fit()
+print(modelo_goog_msft.summary())
+
+plt.figure()
+sns.regplot(x="Microsoft.Close", y="Google.Close", data=acciones, color="gold", line_kws={"color":"slateblue"})
+plt.title("Google vs Microsoft")
+plt.xlabel("Microsoft (Cierre)")
+plt.ylabel("Google (Cierre)")
+plt.tight_layout()
+plt.show()
+```
+
+*Comentario:*\
+La regresión sugiere que los movimientos en el precio de Microsoft impactan de manera significativa en el precio de Google.
